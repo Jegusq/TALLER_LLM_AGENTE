@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agente investigador sobre informes 10-K · MIAX</title>
+<style>
+  :root{
+    --bg-1:#0b1120;
+    --bg-2:#111a2e;
+    --panel:#151f38;
+    --panel-2:#1a2645;
+    --accent:#5ee6c8;
+    --accent-2:#7aa2ff;
+    --warn:#ffb86b;
+    --bad:#ff6b81;
+    --good:#5ee6c8;
+    --text:#eef2fb;
+    --muted:#93a1c2;
+    --border:#26325a;
+    --mono:'JetBrains Mono','Fira Code',Consolas,monospace;
+    --sans:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;padding:0;height:100%;
+    background:radial-gradient(1200px 800px at 15% 10%, #16213f 0%, var(--bg-1) 55%);
+    color:var(--text);
+    font-family:var(--sans);
+    overflow:hidden;
+  }
+  .deck{
+    position:relative;
+    width:100vw;height:100vh;
+  }
+  .slide{
+    position:absolute;
+    inset:0;
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    padding:6vh 8vw;
+    opacity:0;
+    transform:translateY(18px);
+    transition:opacity .45s ease, transform .45s ease;
+  }
+  .slide.active{
+    display:flex;
+    opacity:1;
+    transform:translateY(0);
+  }
+  .kicker{
+    display:inline-flex;
+    align-items:center;
+    gap:.5em;
+    align-self:flex-start;
+    font-family:var(--mono);
+    font-size:.8rem;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--accent);
+    background:rgba(94,230,200,.08);
+    border:1px solid rgba(94,230,200,.25);
+    padding:.35em .9em;
+    border-radius:999px;
+    margin-bottom:1.4rem;
+  }
+  h1{
+    font-size:clamp(2rem,4.2vw,3.4rem);
+    line-height:1.08;
+    margin:0 0 .5rem 0;
+    letter-spacing:-.01em;
+  }
+  h1 .grad{
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+  }
+  h2{
+    font-size:clamp(1.5rem,3vw,2.3rem);
+    margin:0 0 1.2rem 0;
+    letter-spacing:-.01em;
+  }
+  p.lead{
+    font-size:clamp(1rem,1.6vw,1.3rem);
+    color:var(--muted);
+    max-width:52em;
+    line-height:1.55;
+  }
+  .grid{
+    display:grid;
+    gap:1.2rem;
+    margin-top:1.6rem;
+  }
+  .grid.cols-2{grid-template-columns:1fr 1fr;}
+  .grid.cols-3{grid-template-columns:repeat(3,1fr);}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  .card{
+    background:linear-gradient(160deg,var(--panel),var(--panel-2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:1.3rem 1.5rem;
+  }
+  .card h3{
+    margin:0 0 .5rem 0;
+    font-size:1.05rem;
+    color:var(--accent-2);
+  }
+  .card p{margin:0;color:var(--muted);font-size:.95rem;line-height:1.5;}
+  .card .tag{
+    display:inline-block;
+    font-family:var(--mono);
+    font-size:.72rem;
+    color:var(--accent);
+    background:rgba(94,230,200,.1);
+    padding:.15em .6em;
+    border-radius:6px;
+    margin-bottom:.6rem;
+  }
+  .pill-row{display:flex;gap:.6rem;flex-wrap:wrap;margin-top:1rem;}
+  .pill{
+    font-family:var(--mono);
+    font-size:.78rem;
+    padding:.4em 1em;
+    border-radius:999px;
+    border:1px solid var(--border);
+    color:var(--muted);
+    background:rgba(255,255,255,.02);
+  }
+  .pill.good{color:var(--good);border-color:rgba(94,230,200,.35);background:rgba(94,230,200,.08);}
+  .pill.bad{color:var(--bad);border-color:rgba(255,107,129,.35);background:rgba(255,107,129,.08);}
+
+  table.cmp{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:1.6rem;
+    font-size:clamp(.85rem,1.3vw,1.05rem);
+  }
+  table.cmp th, table.cmp td{
+    padding:.75em 1em;
+    text-align:center;
+    border-bottom:1px solid var(--border);
+  }
+  table.cmp th{
+    font-family:var(--mono);
+    font-weight:600;
+    color:var(--muted);
+    text-transform:uppercase;
+    font-size:.72rem;
+    letter-spacing:.06em;
+  }
+  table.cmp td:first-child, table.cmp th:first-child{text-align:left;}
+  table.cmp tr td.win{color:var(--good);font-weight:700;}
+  table.cmp tbody tr:hover{background:rgba(255,255,255,.03);}
+  .arrow{color:var(--muted);font-size:.85em;margin:0 .3em;}
+
+  .bignum{
+    font-family:var(--mono);
+    font-size:clamp(2.2rem,5vw,3.6rem);
+    font-weight:700;
+    line-height:1;
+  }
+  .bignum.good{color:var(--good);}
+  .bignum.bad{color:var(--bad);}
+  .bignum.warn{color:var(--warn);}
+  .sub{color:var(--muted);font-size:.85rem;margin-top:.4rem;}
+
+  .flow{
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+    flex-wrap:wrap;
+    margin-top:1.6rem;
+  }
+  .flow .step{
+    background:var(--panel);
+    border:1px solid var(--border);
+    border-radius:12px;
+    padding:.9em 1.3em;
+    font-family:var(--mono);
+    font-size:.95rem;
+  }
+  .flow .conn{color:var(--accent);font-size:1.3rem;}
+
+  code, .code{
+    font-family:var(--mono);
+    background:rgba(255,255,255,.05);
+    padding:.1em .45em;
+    border-radius:6px;
+    color:var(--accent-2);
+    font-size:.92em;
+  }
+
+  .footer-note{
+    margin-top:2rem;
+    font-size:.85rem;
+    color:var(--muted);
+    border-left:3px solid var(--accent);
+    padding-left:1em;
+  }
+  .footer-note.warn{border-left-color:var(--warn);}
+  .footer-note.bad{border-left-color:var(--bad);}
+
+  .title-slide{justify-content:center;align-items:flex-start;}
+  .title-slide .logo-row{display:flex;align-items:center;gap:.8rem;color:var(--muted);font-family:var(--mono);font-size:.9rem;margin-top:2.2rem;}
+  .title-slide .logo-row span.dot{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block;}
+  .team-edit{color:var(--warn);border-bottom:1px dashed var(--warn);}
+
+  .end-slide{align-items:center;text-align:center;}
+  .end-slide h1{width:100%;}
+
+  /* progress + nav */
+  .progressbar{
+    position:fixed;bottom:0;left:0;height:3px;
+    background:linear-gradient(90deg,var(--accent),var(--accent-2));
+    transition:width .35s ease;
+    z-index:20;
+  }
+  .navhud{
+    position:fixed;
+    bottom:1.4rem;right:2rem;
+    display:flex;align-items:center;gap:1rem;
+    font-family:var(--mono);
+    font-size:.85rem;
+    color:var(--muted);
+    z-index:20;
+    user-select:none;
+  }
+  .navhud button{
+    background:var(--panel);
+    border:1px solid var(--border);
+    color:var(--text);
+    width:2.2rem;height:2.2rem;
+    border-radius:8px;
+    cursor:pointer;
+    font-size:1rem;
+    display:flex;align-items:center;justify-content:center;
+    transition:background .2s, border-color .2s;
+  }
+  .navhud button:hover{background:var(--panel-2);border-color:var(--accent);}
+  .slidenum{font-variant-numeric:tabular-nums;}
+  .brandhud{
+    position:fixed;top:1.4rem;left:2rem;
+    font-family:var(--mono);font-size:.78rem;color:var(--muted);
+    letter-spacing:.08em;text-transform:uppercase;
+    z-index:20;
+  }
+  .brandhud b{color:var(--accent);}
+
+  @media print{
+    body{overflow:visible;}
+    .navhud,.progressbar,.brandhud{display:none;}
+    .slide{
+      position:relative;
+      display:flex !important;
+      opacity:1 !important;
+      transform:none !important;
+      page-break-after:always;
+      height:100vh;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="brandhud">MIAX · LLMs aplicados a Finanzas <b>·</b> Sesión 3</div>
+
+<div class="deck" id="deck">
+
+  <!-- 1. PORTADA -->
+  <section class="slide active title-slide">
+    <div class="kicker">Práctica final · 10-K SEC</div>
+    <h1>Un agente investigador<br><span class="grad">sobre informes 10-K</span></h1>
+    <p class="lead">Retrieval como herramienta, no como arquitectura: un agente que decide entre una
+      consulta exacta a XBRL, una búsqueda difusa sobre el texto o la lectura completa de una sección,
+      y que se evalúa por trayectoria, no solo por respuesta.</p>
+    <div class="logo-row">
+      <span class="dot"></span> Equipo: Iván Nevado, Joseph Egusquiza y Gonzalo de Ramón
+      &nbsp;·&nbsp; 24 de septiembre de 2026 &nbsp;·&nbsp; 8 min + preguntas
+    </div>
+  </section>
+
+  <!-- 2. EL PROBLEMA -->
+  <section class="slide">
+    <div class="kicker">01 · El problema</div>
+    <h2>¿Por qué no un RAG clásico?</h2>
+    <p class="lead">Un RAG de 2 pasos recupera siempre, una vez, con una <em>k</em> fija. Se rompe en
+      tres sitios concretos:</p>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag">comparar</span>
+        <h3>La respuesta está en dos sitios</h3>
+        <p>"¿Qué riesgos añadió Microsoft entre FY2024 y FY2025?" exige recuperar dos veces y comparar,
+          no una pasada mezclando ambos años.</p>
+      </div>
+      <div class="card">
+        <span class="tag">cifras</span>
+        <h3>El dato no está en la prosa</h3>
+        <p>El beneficio neto auditado vive en XBRL. Buscarlo por similitud semántica en el texto es
+          caro, lento y aproximado.</p>
+      </div>
+      <div class="card">
+        <span class="tag">huecos</span>
+        <h3>La pregunta no existe</h3>
+        <p>Un RAG plano siempre devuelve sus <em>k</em> fragmentos, aunque la compañía preguntada
+          no esté en el corpus.</p>
+      </div>
+    </div>
+    <div class="footer-note">Solución: bajar el retrieval de <b>arquitectura</b> a <b>herramienta</b>,
+      y dejar que el agente decida cuándo y cuántas veces usarlo.</div>
+  </section>
+
+  <!-- 3. ARQUITECTURA -->
+  <section class="slide">
+    <div class="kicker">02 · Arquitectura</div>
+    <h2>Cuatro herramientas, coste y precisión muy distintos</h2>
+    <div class="grid cols-4">
+      <div class="card">
+        <span class="tag">gratis · exacta</span>
+        <h3><code>list_available()</code></h3>
+        <p>Comprueba qué compañías, ejercicios y secciones existen antes de responder que algo
+          no está.</p>
+      </div>
+      <div class="card">
+        <span class="tag">casi gratis · exacta</span>
+        <h3><code>get_xbrl_fact()</code></h3>
+        <p>La cifra tal y como la reportó la compañía. Resuelve el alias de ingresos
+          (<code>Revenues</code> / <code>RevenueFromContract…</code>) sin gastar otra llamada.</p>
+      </div>
+      <div class="card">
+        <span class="tag">cara · difusa</span>
+        <h3><code>search_filings()</code></h3>
+        <p>Reescribe la consulta a inglés y filtra por metadatos antes de buscar. El modelo no ve
+          la diferencia, solo que funciona mejor.</p>
+      </div>
+      <div class="card">
+        <span class="tag">muy cara</span>
+        <h3><code>read_section()</code></h3>
+        <p>Texto completo de una sección — decenas de miles de tokens. Solo cuando
+          <code>search_filings</code> se queda corto.</p>
+      </div>
+    </div>
+    <div class="flow">
+      <div class="step">Pregunta</div><span class="conn">→</span>
+      <div class="step">Modelo decide</div><span class="conn">→</span>
+      <div class="step">Herramienta ejecuta</div><span class="conn">→</span>
+      <div class="step">Modelo observa</div><span class="conn">→</span>
+      <div class="step">Repite o responde</div>
+    </div>
+  </section>
+
+  <!-- 4. GUARDRAILS -->
+  <section class="slide">
+    <div class="kicker">03 · Guardrails</div>
+    <h2>Que el agente no se invente una cifra</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag">salida</span>
+        <h3>Respuesta estructurada</h3>
+        <p><code>RespuestaFinanciera</code> obliga a <code>fuente</code>, <code>cita</code> y
+          <code>chunk_id</code>. No hay respuesta sin decir de dónde sale.</p>
+      </div>
+      <div class="card">
+        <span class="tag">límites</span>
+        <h3>Tool / Model call limit</h3>
+        <p><code>ToolCallLimitMiddleware(8)</code> y <code>ModelCallLimitMiddleware(10)</code> cortan
+          el bucle infinito que vimos el 10 de septiembre.</p>
+      </div>
+      <div class="card">
+        <span class="tag">verificación</span>
+        <h3><code>verificar_cifras_contra_xbrl</code></h3>
+        <p>Si la cifra afirmada no cuadra (±1%) con XBRL, se le devuelve el desajuste al modelo
+          y se le obliga a corregirse antes de responder.</p>
+      </div>
+    </div>
+    <div class="footer-note">Un guardrail razonable, un límite y una verificación — no evitan todos
+      los fallos, pero convierten "se lo inventó" en "el sistema lo detectó".</div>
+  </section>
+
+  <!-- 5. GOLDEN SET -->
+  <section class="slide">
+    <div class="kicker">04 · Evaluación · golden set propio</div>
+    <h2>20 preguntas, 3 familias</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag">7 preguntas</span>
+        <h3>Numérica</h3>
+        <p>Mide el guardrail contra XBRL. Ancla: <code>cifra_esperada</code> + <code>concept_xbrl</code>.</p>
+      </div>
+      <div class="card">
+        <span class="tag">7 preguntas</span>
+        <h3>Extractiva</h3>
+        <p>Mide retrieval y trazabilidad. Ancla: una frase literal (<code>ancla_texto</code>), no un
+          <code>chunk_id</code> que cambia al re-trocear.</p>
+      </div>
+      <div class="card">
+        <span class="tag">6 preguntas</span>
+        <h3>Comparativa</h3>
+        <p>Descomponer, recuperar dos veces y comparar entre FY2024 y FY2025. Mínimo exigido: 6 — cumplido.</p>
+      </div>
+    </div>
+    <div class="pill-row">
+      <span class="pill good">✓ pasa el validador</span>
+      <span class="pill">20/20 preguntas</span>
+      <span class="pill">6/6 comparativas mínimas</span>
+    </div>
+  </section>
+
+  <!-- 6. TABLA BASELINE VS FINAL -->
+  <section class="slide">
+    <div class="kicker">05 · Resultado central</div>
+    <h2>Baseline (día 10) contra el sistema final</h2>
+    <table class="cmp">
+      <thead>
+        <tr><th>Métrica</th><th>Baseline</th><th></th><th>Final</th><th>Lectura</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Cita correcta</td><td>71,4 %</td><td class="arrow">→</td><td class="win">92,9 %</td>
+          <td>mejora clara</td>
+        </tr>
+        <tr>
+          <td>Cifra coincide con XBRL</td><td>53,8 %</td><td class="arrow">→</td><td class="win">92,3 %</td>
+          <td>alias + guardrail funcionan</td>
+        </tr>
+        <tr>
+          <td>Trayectoria correcta</td><td>100 %</td><td class="arrow">→</td><td>100 %</td>
+          <td>ya era buena</td>
+        </tr>
+        <tr>
+          <td>Recall@5 (golden set propio)</td><td>15,4 %</td><td class="arrow">→</td><td class="win">69,2 %</td>
+          <td>mejora fuerte, con margen</td>
+        </tr>
+        <tr>
+          <td>Coste medio / pregunta</td><td>1,73 ¢</td><td class="arrow">→</td><td class="win">1,33 ¢</td>
+          <td>el final es más barato</td>
+        </tr>
+        <tr>
+          <td>Latencia media</td><td>28,5 s</td><td class="arrow">→</td><td>26,8 s</td>
+          <td>similar</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer-note">Mejoró todo lo que se tocó — y no costó más. El coste medio bajó porque el
+      retrieval mejorado necesita menos reintentos, no a pesar de la reescritura de consulta.</div>
+  </section>
+
+  <!-- 7. RETRIEVAL: ARREGLOS MEDIDOS -->
+  <section class="slide">
+    <div class="kicker">06 · Cómo se llegó ahí</div>
+    <h2>Tres arreglos al retrieval, medidos uno a uno</h2>
+    <div class="grid cols-3">
+      <div class="card">
+        <span class="tag">arreglo 1</span>
+        <h3>Filtro de metadatos</h3>
+        <div class="bignum">30,8<span style="font-size:.5em;">%</span></div>
+        <p class="sub">→ 46,2 % recall@5</p>
+      </div>
+      <div class="card">
+        <span class="tag">arreglo 2 · descartado</span>
+        <h3>Híbrido BM25 + denso</h3>
+        <div class="bignum warn">= 46,2<span style="font-size:.5em;">%</span></div>
+        <p class="sub">sin mejora, una dependencia más</p>
+      </div>
+      <div class="card">
+        <span class="tag">arreglo 3 · el que importa</span>
+        <h3>Reescritura de consulta a inglés</h3>
+        <div class="bignum good">92,3<span style="font-size:.5em;">%</span></div>
+        <p class="sub">el corpus está en inglés; la pregunta, no siempre</p>
+      </div>
+    </div>
+    <div class="footer-note">Medido con el corpus de prueba de la sesión 2. Sobre nuestro propio golden
+      set el recall@5 final fue del 69,2 % — la diferencia es un hallazgo, no un error de medición.</div>
+  </section>
+
+  <!-- 8. QUÉ NO FUNCIONÓ -->
+  <section class="slide">
+    <div class="kicker">07 · Honestidad experimental</div>
+    <h2>Qué se probó y no funcionó (del todo)</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <span class="tag bad-tag">descartado</span>
+        <h3>Híbrido BM25 + búsqueda densa</h3>
+        <p>Arreglo razonable, medido con cuidado: mismo recall@5 que filtro + reescritura, con una
+          dependencia añadida. Se descarta por complejidad sin beneficio, no por error de implementación.</p>
+      </div>
+      <div class="card">
+        <span class="tag bad-tag">fallo abierto</span>
+        <h3><code>g-c01</code>: comparativa de Microsoft</h3>
+        <p>Falla en <b>ambos</b> sistemas con <code>SinRespuestaEstructurada</code>: el agente agota
+          vueltas sin cerrar una respuesta validada. Pendiente de diagnóstico.</p>
+      </div>
+    </div>
+    <div class="footer-note warn">El recall@5 en preguntas <b>comparativas</b> del golden set propio
+      es más bajo que en extractivas (3/6 vs 6/7): descomponer y recuperar dos veces sigue siendo el
+      punto más frágil del sistema.</div>
+  </section>
+
+  <!-- 9. PREGUNTAS CIEGAS (placeholder) -->
+  <section class="slide">
+    <div class="kicker">08 · Hold-out del día 24</div>
+    <h2>10 preguntas ciegas — resultado en directo</h2>
+    <div class="grid cols-4">
+      <div class="card"><span class="tag">cita</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
+      <div class="card"><span class="tag">cifra</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
+      <div class="card"><span class="tag">trayectoria</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
+      <div class="card"><span class="tag">coste medio</span><div class="bignum team-edit">—</div><p class="sub">¢ / pregunta</p></div>
+    </div>
+    <div class="footer-note warn">Se rellena en el aula, ejecutando <code>evaluar("holdout.jsonl")</code>
+      contra el repositorio ya entregado. Si el resultado baja frente al golden set propio, es un
+      hallazgo esperable: separa mejora general de memoria del conjunto con el que iteramos.</div>
+  </section>
+
+  <!-- 10. CONCLUSIONES -->
+  <section class="slide">
+    <div class="kicker">09 · Conclusiones</div>
+    <h2>Lo que nos llevamos</h2>
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>El enrutado importa más que el modelo</h3>
+        <p>La misma pregunta, con la herramienta correcta, pasa de "casi bien" a "verificable". El
+          docstring es <em>prompt engineering</em>, no documentación.</p>
+      </div>
+      <div class="card">
+        <h3>Medir antes de afirmar</h3>
+        <p>El híbrido BM25 "parecía" buena idea. Medido, no aportó nada. La tabla decide, no la
+          intuición.</p>
+      </div>
+      <div class="card">
+        <h3>Un guardrail no es un candado</h3>
+        <p>Detecta y corrige la mayoría de las cifras mal citadas, pero <code>g-c01</code> demuestra
+          que no es infalible.</p>
+      </div>
+      <div class="card">
+        <h3>El coste es una columna, no una nota</h3>
+        <p>El sistema final es mejor <b>y</b> más barato — no hubo que elegir entre calidad y coste
+          esta vez.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 11. CIERRE -->
+  <section class="slide end-slide">
+    <h1><span class="grad">Gracias</span></h1>
+    <p class="lead">Preguntas.</p>
+    <div class="logo-row" style="margin-top:2rem;">
+      <span class="dot"></span> Repositorio: <a href="https://github.com/Jegusq/TALLER_LLM_AGENTE" style="color:var(--accent-2);">github.com/Jegusq/TALLER_LLM_AGENTE</a>
+    </div>
+  </section>
+
+</div>
+
+<div class="progressbar" id="progressbar" style="width:0%"></div>
+<div class="navhud">
+  <button id="prevBtn" title="Anterior (←)">‹</button>
+  <span class="slidenum"><span id="cur">1</span> / <span id="tot">11</span></span>
+  <button id="nextBtn" title="Siguiente (→)">›</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+  document.getElementById('tot').textContent = total;
+
+  function render(){
+    slides.forEach((s,i)=> s.classList.toggle('active', i===idx));
+    document.getElementById('cur').textContent = idx+1;
+    document.getElementById('progressbar').style.width = ((idx+1)/total*100)+'%';
+  }
+  function go(delta){
+    idx = Math.min(Math.max(idx+delta,0), total-1);
+    render();
+  }
+  document.getElementById('prevBtn').addEventListener('click', ()=>go(-1));
+  document.getElementById('nextBtn').addEventListener('click', ()=>go(1));
+  window.addEventListener('keydown', (e)=>{
+    if(['ArrowRight','PageDown',' '].includes(e.key)) go(1);
+    if(['ArrowLeft','PageUp'].includes(e.key)) go(-1);
+    if(e.key === 'Home') { idx=0; render(); }
+    if(e.key === 'End') { idx=total-1; render(); }
+  });
+  let touchX = null;
+  window.addEventListener('touchstart', e=> touchX = e.touches[0].clientX);
+  window.addEventListener('touchend', e=>{
+    if(touchX===null) return;
+    const dx = e.changedTouches[0].clientX - touchX;
+    if(Math.abs(dx) > 50) go(dx < 0 ? 1 : -1);
+    touchX = null;
+  });
+  render();
+</script>
+
+</body>
+</html>
