@@ -371,7 +371,9 @@
         <span class="tag">verificación</span>
         <h3><code>verificar_cifras_contra_xbrl</code></h3>
         <p>Si la cifra afirmada no cuadra (±1%) con XBRL, se le devuelve el desajuste al modelo
-          y se le obliga a corregirse antes de responder.</p>
+          y se le obliga a corregirse antes de responder. Solo verifica cifras que el agente dice
+          sacar de XBRL: con cifras de la prosa (los 75,4 mil millones de Activision) daba falsos
+          positivos.</p>
       </div>
     </div>
     <div class="footer-note">Un guardrail razonable, un límite y una verificación — no evitan todos
@@ -410,7 +412,7 @@
   <!-- 6. TABLA BASELINE VS FINAL -->
   <section class="slide">
     <div class="kicker">05 · Resultado central</div>
-    <h2>Baseline (día 10) contra el sistema final</h2>
+    <h2>Baseline contra el sistema final</h2>
     <table class="cmp">
       <thead>
         <tr><th>Métrica</th><th>Baseline</th><th></th><th>Final</th><th>Lectura</th></tr>
@@ -418,11 +420,11 @@
       <tbody>
         <tr>
           <td>Cita correcta</td><td>71,4 %</td><td class="arrow">→</td><td class="win">92,9 %</td>
-          <td>mejora clara</td>
+          <td>+3 preguntas de 14 (muestra pequeña)</td>
         </tr>
         <tr>
           <td>Cifra coincide con XBRL</td><td>53,8 %</td><td class="arrow">→</td><td class="win">92,3 %</td>
-          <td>alias + guardrail funcionan</td>
+          <td>el guardrail fuerza una cifra verificable (comparativas 0/6 → 5/6; numéricas 7/7 en ambos)</td>
         </tr>
         <tr>
           <td>Trayectoria correcta</td><td>100 %</td><td class="arrow">→</td><td>100 %</td>
@@ -442,8 +444,9 @@
         </tr>
       </tbody>
     </table>
-    <div class="footer-note">Mejoró todo lo que se tocó — y no costó más. El coste medio bajó porque el
-      retrieval mejorado necesita menos reintentos, no a pesar de la reescritura de consulta.</div>
+    <div class="footer-note">Mejoró todo lo que se tocó — y no costó más. El coste bajó porque el
+      retrieval mejorado acierta antes: de 3,6 a 2,65 llamadas a herramienta por pregunta. El coste
+      del final ya incluye las reescrituras de consulta.</div>
   </section>
 
   <!-- 7. RETRIEVAL: ARREGLOS MEDIDOS -->
@@ -470,8 +473,8 @@
         <p class="sub">el corpus está en inglés; la pregunta, no siempre</p>
       </div>
     </div>
-    <div class="footer-note">Medido con el corpus de prueba de la sesión 2. Sobre nuestro propio golden
-      set el recall@5 final fue del 69,2 % — la diferencia es un hallazgo, no un error de medición.</div>
+    <div class="footer-note">Medido sobre el golden set oficial de la sesión 2 (13 preguntas con ancla). Sobre nuestro
+      propio golden set el recall@5 final es del 69,2 %: son preguntas distintas y más compuestas.</div>
   </section>
 
   <!-- 8. QUÉ NO FUNCIONÓ -->
@@ -487,9 +490,9 @@
       </div>
       <div class="card">
         <span class="tag bad-tag">fallo abierto</span>
-        <h3><code>g-c01</code>: comparativa de Microsoft</h3>
-        <p>Falla en <b>ambos</b> sistemas con <code>SinRespuestaEstructurada</code>: el agente agota
-          vueltas sin cerrar una respuesta validada. Pendiente de diagnóstico.</p>
+        <h3><code>SinRespuestaEstructurada</code>: una comparativa por sistema</h3>
+        <p>Una comparativa por sistema termina sin respuesta estructurada: <code>g-c04</code> (Amazon) en
+          el baseline y <code>g-c01</code> (Microsoft) en el final. Causa sin diagnosticar.</p>
       </div>
     </div>
     <div class="footer-note warn">El recall@5 en preguntas <b>comparativas</b> del golden set propio
@@ -529,8 +532,8 @@
       </div>
       <div class="card">
         <h3>Un guardrail no es un candado</h3>
-        <p>Detecta y corrige la mayoría de las cifras mal citadas, pero <code>g-c01</code> demuestra
-          que no es infalible.</p>
+        <p>Obliga a que la cifra estructurada sea verificable contra XBRL, pero <code>g-c01</code>
+          demuestra que no es infalible.</p>
       </div>
       <div class="card">
         <h3>El coste es una columna, no una nota</h3>
