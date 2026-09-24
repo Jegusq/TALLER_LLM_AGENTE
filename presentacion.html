@@ -210,6 +210,13 @@
   .end-slide{align-items:center;text-align:center;}
   .end-slide h1{width:100%;}
 
+  /* tabla densa: las respuestas del hold-out */
+  table.cmp.dense{margin-top:1rem;font-size:clamp(.7rem,1.02vw,.86rem);}
+  table.cmp.dense th, table.cmp.dense td{padding:.38em .7em;text-align:left;}
+  table.cmp.dense td:first-child{font-family:var(--mono);color:var(--muted);white-space:nowrap;}
+  table.cmp.dense td.ok{color:var(--good);font-weight:600;white-space:nowrap;}
+  table.cmp.dense td.part{color:var(--warn);font-weight:600;white-space:nowrap;}
+
   /* progress + nav */
   .progressbar{
     position:fixed;bottom:0;left:0;height:3px;
@@ -522,7 +529,34 @@
       una pregunta de 9 llamadas (<code>ho-008</code>); sin ella, 1,38 ¢.</div>
   </section>
 
-  <!-- 10. CONCLUSIONES -->
+  <!-- 10. HOLD-OUT: LAS RESPUESTAS -->
+  <section class="slide">
+    <div class="kicker">08 · Hold-out · las respuestas</div>
+    <h2>Qué contestó el agente</h2>
+    <table class="cmp dense">
+      <thead>
+        <tr><th>ID</th><th>Pregunta</th><th>Respuesta del agente</th><th>Fuente</th><th>Resultado</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ho-001</td><td>NVIDIA FY2024 · garantías de suministro de obleas</td><td>Sin suministro garantizado de obleas, componentes ni capacidad; depende de terceros.</td><td>texto</td><td class="part">cita ✓ · parcial</td></tr>
+        <tr><td>ho-002</td><td>Alphabet 2025 · exposición a divisas (Item 7A)</td><td>Dólar australiano, libra, dólar canadiense, euro y yen.</td><td>texto</td><td class="ok">cita ✓</td></tr>
+        <tr><td>ho-003</td><td>Apple 2025 · ventas en la Gran China</td><td>Bajan un 4 % (64.377 M frente a 66.952 M) por menos iPhone, compensado en parte por más Mac.</td><td>texto</td><td class="ok">cita ✓</td></tr>
+        <tr><td>ho-004</td><td>Microsoft FY2024 · activo total</td><td>512.163 M USD.</td><td>xbrl</td><td class="ok">cifra ✓</td></tr>
+        <tr><td>ho-005</td><td>Amazon 2025 · beneficio bruto</td><td>No lo reporta: no está en el corpus, y no lo estima.</td><td>ninguna</td><td class="ok">correcto</td></tr>
+        <tr><td>ho-006</td><td>NVIDIA FY2023 · revenue</td><td>FY2023 no está en el corpus (solo FY2024 y FY2025).</td><td>ninguna</td><td class="ok">correcto</td></tr>
+        <tr><td>ho-007</td><td>Apple FY24→FY25 · ingresos y iPhone</td><td>391.035 M → 416.161 M (+6,43 %); el iPhone sube por los modelos Pro.</td><td>ambas</td><td class="ok">cifra ✓ · cita ✓</td></tr>
+        <tr><td>ho-008</td><td>Alphabet 24→25 · I+D y compensación</td><td>49.326 M → 61.087 M (+23,84 %); no localiza la advertencia sobre la plantilla.</td><td>ambas</td><td class="part">cifra ✓ · parcial</td></tr>
+        <tr><td>ho-009</td><td>NVIDIA FY24→FY25 · beneficio bruto y margen</td><td>44.301 M → 97.858 M (+120,9 %); margen del 72,7 % al 75,0 %.</td><td>ambas</td><td class="ok">cifra ✓ · cita ✓</td></tr>
+        <tr><td>ho-010</td><td>Microsoft FY24→FY25 · beneficio operativo y segmentos</td><td>109.433 M → 128.528 M (+17,45 %); los tres segmentos suben un 17–18 %.</td><td>ambas</td><td class="part">cifra ✓ · cita ✗</td></tr>
+      </tbody>
+    </table>
+    <div class="footer-note">Ocho respuestas completas y dos parciales: <code>ho-001</code> y <code>ho-008</code>,
+      justo las dos donde falla el recall@5. En <code>ho-008</code> el agente dice que no encontró la advertencia
+      sobre compensación y plantilla, en vez de inventarla. En <code>ho-010</code> la respuesta es correcta,
+      pero la comprobación automática de la cita no la reconoce.</div>
+  </section>
+
+  <!-- 11. CONCLUSIONES -->
   <section class="slide">
     <div class="kicker">09 · Conclusiones</div>
     <h2>Lo que nos llevamos</h2>
@@ -550,7 +584,7 @@
     </div>
   </section>
 
-  <!-- 11. CIERRE -->
+  <!-- 12. CIERRE -->
   <section class="slide end-slide">
     <h1><span class="grad">Gracias</span></h1>
     <p class="lead">Preguntas.</p>
