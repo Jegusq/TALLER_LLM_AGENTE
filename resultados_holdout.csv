@@ -1,0 +1,11 @@
+id,familia,ticker,recall,intentos,latencia_s,coste_usd,llamadas,reescrituras_fallidas,cifra_obtenida,fuente,chunk_id,herramientas,cita,cifra,trayectoria
+ho-001,extractiva,NVDA,False,1,42.67108279999957,0.017038499999999998,2,0,,texto,NVDA-2024-1A-0005,"search_filings,search_filings",True,,True
+ho-002,extractiva,GOOGL,True,1,14.153323599999567,0.00843675,2,0,,texto,GOOGL-2025-7A-0000,"list_available,search_filings",True,,True
+ho-003,extractiva,AAPL,True,1,32.531825000001845,0.014769000000000001,3,0,,texto,AAPL-2025-7-0002,"list_available,search_filings,get_xbrl_fact",True,,True
+ho-004,numerica,MSFT,,1,6.442625100000441,0.00333075,1,0,512163000000.0,xbrl,,get_xbrl_fact,,True,True
+ho-005,numerica,AMZN,,1,55.591588900002535,0.02730825,5,0,,ninguna,,"list_available,get_xbrl_fact,search_filings,get_xbrl_fact,search_filings",,,True
+ho-006,numerica,NVDA,,1,18.655799899999693,0.006915,2,0,,ninguna,,"get_xbrl_fact,list_available",,,True
+ho-007,comparativa,AAPL,True,1,49.58131830000275,0.01921875,4,0,416161000000.0,ambas,AAPL-2025-7-0003,"list_available,get_xbrl_fact,get_xbrl_fact,search_filings",True,True,True
+ho-008,comparativa,GOOGL,False,1,77.23534160000054,0.08989950000000001,9,0,61087000000.0,ambas,GOOGL-2025-7-0014,"list_available,get_xbrl_fact,get_xbrl_fact,search_filings,search_filings,search_filings,search_filings,search_filings,search_filings",True,True,True
+ho-009,comparativa,NVDA,True,1,38.09401340000113,0.013062750000000001,6,0,97858000000.0,ambas,NVDA-2025-7-0015,"list_available,get_xbrl_fact,get_xbrl_fact,get_xbrl_fact,get_xbrl_fact,search_filings",True,True,True
+ho-010,comparativa,MSFT,True,1,48.85139259999778,0.01400025,4,0,128528000000.0,ambas,MSFT-2025-7-0008,"list_available,get_xbrl_fact,get_xbrl_fact,search_filings",False,True,True

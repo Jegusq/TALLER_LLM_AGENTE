@@ -500,19 +500,26 @@
       punto más frágil del sistema.</div>
   </section>
 
-  <!-- 9. PREGUNTAS CIEGAS (placeholder) -->
+  <!-- 9. PREGUNTAS CIEGAS (hold-out) -->
   <section class="slide">
     <div class="kicker">08 · Hold-out del día 24</div>
-    <h2>10 preguntas ciegas — resultado en directo</h2>
+    <h2>10 preguntas ciegas — resultado</h2>
     <div class="grid cols-4">
-      <div class="card"><span class="tag">cita</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
-      <div class="card"><span class="tag">cifra</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
-      <div class="card"><span class="tag">trayectoria</span><div class="bignum team-edit">—</div><p class="sub">Δ vs golden set: <span class="team-edit">—</span></p></div>
-      <div class="card"><span class="tag">coste medio</span><div class="bignum team-edit">—</div><p class="sub">¢ / pregunta</p></div>
+      <div class="card"><span class="tag">cita</span><div class="bignum">85,7<span style="font-size:.5em;">%</span></div><p class="sub">6/7 · Δ vs golden set: −7,1 pts (1 pregunta)</p></div>
+      <div class="card"><span class="tag">cifra</span><div class="bignum good">100<span style="font-size:.5em;">%</span></div><p class="sub">5/5 · Δ vs golden set: +7,7 pts</p></div>
+      <div class="card"><span class="tag">trayectoria</span><div class="bignum good">100<span style="font-size:.5em;">%</span></div><p class="sub">10/10 · Δ vs golden set: 0</p></div>
+      <div class="card"><span class="tag">coste medio</span><div class="bignum warn">2,14<span style="font-size:.5em;">¢</span></div><p class="sub">por pregunta · golden set: 1,33 ¢</p></div>
     </div>
-    <div class="footer-note warn">Se rellena en el aula, ejecutando <code>evaluar("holdout.jsonl")</code>
-      contra el repositorio ya entregado. Si el resultado baja frente al golden set propio, es un
-      hallazgo esperable: separa mejora general de memoria del conjunto con el que iteramos.</div>
+    <div class="pill-row">
+      <span class="pill good">✓ 0 errores en 10 preguntas</span>
+      <span class="pill good">✓ 2 de 2 sin respuesta en el corpus → «ninguna», sin estimar</span>
+      <span class="pill">recall@5 71,4 % (+2,2 pts)</span>
+    </div>
+    <div class="footer-note">Ejecutado con <code>evaluar("holdout.jsonl")</code> contra el repositorio entregado. Las dos
+      preguntas sin respuesta (beneficio bruto de Amazon y ejercicio FY2023 de NVIDIA) se contestaron
+      diciendo que no están en el corpus. No hay caída frente al golden set salvo una cita (1 de 7): con
+      10 preguntas, cada una pesa 10 puntos. El coste sube por el reparto (4 comparativas de 10) y por
+      una pregunta de 9 llamadas (<code>ho-008</code>); sin ella, 1,38 ¢.</div>
   </section>
 
   <!-- 10. CONCLUSIONES -->
